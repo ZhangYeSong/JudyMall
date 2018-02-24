@@ -35,21 +35,44 @@ public class UserServiceImpl implements IUserService{
 
     @Override
     public ServerResponse<String> register(User user) {
-        int resultCount = userMapper.checkUsername(user.getUsername());
-        if (resultCount > 0) {
-            return ServerResponse.createByErrorMessage("用户名已存在");
+        ServerResponse<String> validResponse = checkValid(user.getUsername(), Const.USERNAME);
+        if (!validResponse.isSuccess()) {
+            return validResponse;
         }
-        resultCount = userMapper.checkEmail(user.getEmail());
-        if (resultCount > 0) {
-            return ServerResponse.createByErrorMessage("email已存在");
+
+        validResponse = checkValid(user.getEmail(), Const.EMAIL);
+        if (!validResponse.isSuccess()) {
+            return validResponse;
         }
 
         user.setRole(Const.Role.ROLE_CUSTOMER);
         user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
-        resultCount = userMapper.insert(user);
+        int resultCount = userMapper.insert(user);
         if (resultCount == 0) {
             return ServerResponse.createByErrorMessage("注册失败");
         }
         return ServerResponse.createBySuccessMessage("注册成功");
+    }
+
+    @Override
+    public ServerResponse<String> checkValid(String str, String type) {
+        if (StringUtils.isNotBlank(type)) {
+            switch (type) {
+                case Const.USERNAME:
+                    if (userMapper.checkUsername(str) > 0) {
+                        return ServerResponse.createByErrorMessage("用户名已存在");
+                    }
+                    break;
+                case Const.EMAIL:
+                    if (userMapper.checkEmail(str) > 0) {
+                        return ServerResponse.createByErrorMessage("email已注册");
+                    }
+                    break;
+            }
+            return ServerResponse.createBySuccessMessage("校验成功");
+        } else {
+            return ServerResponse.createByErrorMessage("参数有误");
+        }
+
     }
 }

@@ -2,6 +2,7 @@ package com.judy.mmall.service.impl;
 
 import com.judy.mmall.commom.Const;
 import com.judy.mmall.commom.ServerResponse;
+import com.judy.mmall.commom.TokenCache;
 import com.judy.mmall.dao.UserMapper;
 import com.judy.mmall.pojo.User;
 import com.judy.mmall.service.IUserService;
@@ -9,6 +10,8 @@ import com.judy.mmall.util.MD5Util;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service("iUserService")
 public class UserServiceImpl implements IUserService{
@@ -72,6 +75,34 @@ public class UserServiceImpl implements IUserService{
             return ServerResponse.createBySuccessMessage("校验成功");
         } else {
             return ServerResponse.createByErrorMessage("参数有误");
+        }
+
+    }
+
+    @Override
+    public ServerResponse<String> selectQuestion(String username) {
+        ServerResponse<String> validResponse = checkValid(username, Const.USERNAME);
+        if (validResponse.isSuccess()) {
+            return ServerResponse.createByErrorMessage("用户名不存在");
+        }
+
+        String question = userMapper.selectQuestionByUsername(username);
+        if (StringUtils.isNotBlank(question)) {
+            return ServerResponse.createBySuccess(question);
+        } else {
+            return ServerResponse.createByErrorMessage("找回密码问题不存在");
+        }
+    }
+
+    @Override
+    public ServerResponse<String> checkAnswer(String username, String question, String answer) {
+        int resultCount = userMapper.checkAnswer(username, question, answer);
+        if (resultCount > 0) {
+            String forgetToken = UUID.randomUUID().toString();
+            TokenCache.setKey("token_" + username, forgetToken);
+            return ServerResponse.createBySuccess(forgetToken);
+        } else {
+            return ServerResponse.createByErrorMessage("答案错误");
         }
 
     }

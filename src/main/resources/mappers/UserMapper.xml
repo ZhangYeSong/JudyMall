@@ -312,8 +312,18 @@
   </select>
   <select id="selectLogin" resultMap="BaseResultMap" parameterType="map">
     SELECT
-    <include refid="Base_Column_List"/>
+    <include refid="Base_Column_List"/> FROM  mmall_user
     WHERE username = #{username}
     AND password = #{password}
+  </select>
+  <select id="selectQuestionByUsername" resultType="string" parameterType="string">
+    SELECT question FROM mmall_user
+    WHERE username = #{username}
+  </select>
+  <select id="checkAnswer" resultType="int" parameterType="map">
+    SELECT COUNT (1) FROM mmall_user
+    WHERE username = #{username}
+    AND question = #{question}
+    AND answer = #{answer}
   </select>
 </mapper>

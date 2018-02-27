@@ -171,7 +171,7 @@
     WHERE username = #{username}
   </select>
   <select id="checkAnswer" resultType="int" parameterType="map">
-    SELECT COUNT (1) FROM mmall_user
+    SELECT COUNT(1) FROM mmall_user
     WHERE username = #{username}
     AND question = #{question}
     AND answer = #{answer}
@@ -182,7 +182,7 @@
     WHERE username = #{username}
   </update>
   <select id="checkPassword" resultType="int" parameterType="map">
-    SELECT COUNT (1) FROM mmall_user
+    SELECT COUNT(1) FROM mmall_user
     WHERE id = #{userId}
     AND password = #{password}
   </select>

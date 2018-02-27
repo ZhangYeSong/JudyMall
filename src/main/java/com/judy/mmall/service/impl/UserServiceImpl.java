@@ -1,6 +1,5 @@
 package com.judy.mmall.service.impl;
 
-import com.google.common.cache.LoadingCache;
 import com.judy.mmall.commom.Const;
 import com.judy.mmall.commom.ServerResponse;
 import com.judy.mmall.commom.TokenCache;

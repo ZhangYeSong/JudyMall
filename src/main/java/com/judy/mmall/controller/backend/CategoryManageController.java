@@ -1,10 +1,8 @@
 package com.judy.mmall.controller.backend;
 
-import com.judy.mmall.commom.Const;
 import com.judy.mmall.commom.ResponseCode;
 import com.judy.mmall.commom.ServerResponse;
 import com.judy.mmall.pojo.Category;
-import com.judy.mmall.pojo.User;
 import com.judy.mmall.service.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,8 +23,9 @@ public class CategoryManageController {
     @ResponseBody
     public ServerResponse addCategory(HttpSession session, String categoryName, @RequestParam(value = "parentId",
             defaultValue = "0") Integer parentId) {
-        if (isManager(session))
+        if (!ServerResponse.isManager(session)) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "没有以管理员身份登录");
+        }
 
         return iCategoryService.addCategory(categoryName, parentId);
     }
@@ -34,7 +33,9 @@ public class CategoryManageController {
     @RequestMapping("set_category_name.do")
     @ResponseBody
     public ServerResponse setCategoryName(HttpSession session, Integer categoryId, String categoryName) {
-        isManager(session);
+        if (!ServerResponse.isManager(session)) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "没有以管理员身份登录");
+        }
         return iCategoryService.setCategoryName(categoryId, categoryName);
     }
 
@@ -42,7 +43,9 @@ public class CategoryManageController {
     @ResponseBody
     public ServerResponse<List<Category>> getCategory(HttpSession session, @RequestParam(value = "categoryId",
             defaultValue = "0") Integer categoryId) {
-        isManager(session);
+        if (!ServerResponse.isManager(session)) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "没有以管理员身份登录");
+        }
         return iCategoryService.getCategory(categoryId);
     }
 
@@ -50,16 +53,9 @@ public class CategoryManageController {
     @ResponseBody
     public ServerResponse recurseCategory(HttpSession session, @RequestParam(value = "categoryId",
             defaultValue = "0") Integer categoryId) {
-        isManager(session);
-        return iCategoryService.recurseCategory(categoryId);
-    }
-
-    private boolean isManager(HttpSession session) {
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
-        if (user == null || user.getRole() != Const.Role.ROLE_ADMIN) {
-            session.setAttribute(Const.CURRENT_USER, user);
-            return true;
+        if (!ServerResponse.isManager(session)) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "没有以管理员身份登录");
         }
-        return false;
+        return iCategoryService.recurseCategory(categoryId);
     }
 }

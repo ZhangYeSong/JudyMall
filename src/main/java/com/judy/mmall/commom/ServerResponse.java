@@ -1,8 +1,10 @@
 package com.judy.mmall.commom;
 
+import com.judy.mmall.pojo.User;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
+import javax.servlet.http.HttpSession;
 import java.io.Serializable;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
@@ -50,6 +52,14 @@ public class ServerResponse<T> implements Serializable {
 
     public static <T> ServerResponse<T> createBySuccess() {
         return new ServerResponse<T>(ResponseCode.SUCCESS.getCode());
+    }
+
+    public static boolean isManager(HttpSession session) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user != null && user.getRole() == Const.Role.ROLE_ADMIN) {
+            return true;
+        }
+        return false;
     }
 
     public static <T> ServerResponse<T> createBySuccessMessage(String msg) {

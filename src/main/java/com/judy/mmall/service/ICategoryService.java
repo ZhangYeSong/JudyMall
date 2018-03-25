@@ -12,5 +12,5 @@ public interface ICategoryService {
 
     ServerResponse<List<Category>> getCategory(Integer categoryId);
 
-    ServerResponse recurseCategory(Integer categoryId);
+    ServerResponse<List<Integer>> recurseCategory(Integer categoryId);
 }

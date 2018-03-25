@@ -8,6 +8,7 @@ import com.judy.mmall.dao.CategoryMapper;
 import com.judy.mmall.dao.ProductMapper;
 import com.judy.mmall.pojo.Category;
 import com.judy.mmall.pojo.Product;
+import com.judy.mmall.service.ICategoryService;
 import com.judy.mmall.service.IProductService;
 import com.judy.mmall.util.DateTimeUtil;
 import com.judy.mmall.util.PropertiesUtil;
@@ -26,8 +27,12 @@ public class ProductServiceImpl implements IProductService {
     @Autowired
     private ProductMapper productMapper;
 
+
     @Autowired
-    private CategoryMapper categoryMapper;
+    CategoryMapper categoryMapper;
+
+    @Autowired
+    ICategoryService iCategoryService;
 
     @Override
     public ServerResponse saveOrUpdateProduct(Product product) {
@@ -91,7 +96,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public ServerResponse<PageInfo> getProductList(int pageNum, int pageSize) {
+    public ServerResponse<PageInfo> getAllProductList(int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         List<Product> products = productMapper.selectProducList();
         List<ProductListVo> productVos = new ArrayList<>();
@@ -108,7 +113,10 @@ public class ProductServiceImpl implements IProductService {
     public ServerResponse<PageInfo> searchProductList(String productName, Integer productId, int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         productName = "%" + productName + "%";
-        List<Product> products = productMapper.selectByNameAndId(productName, productId);
+        if (StringUtils.isBlank(productName) && productId == null) {
+            return ServerResponse.createByErrorMessage("参数为空");
+        }
+        List<Product> products = productMapper.selectByNameAndId(StringUtils.isBlank(productName) ? null : productName, productId);
         List<ProductListVo> productVos = new ArrayList<>();
         for (Product product : products) {
             ProductListVo productListVo = assembleProductListVo(product);
@@ -132,6 +140,44 @@ public class ProductServiceImpl implements IProductService {
             return ServerResponse.createByErrorMessage("商品已下架");
         }
         return ServerResponse.createBySuccess(productDetailVo);
+    }
+
+    @Override
+    public ServerResponse<PageInfo> getProductList(String keyword, Integer categoryId, int pageNum, int pageSize, String orderBy) {
+        if (StringUtils.isBlank(keyword) && categoryId == null) {
+            return ServerResponse.createByErrorMessage("参数为空");
+        }
+
+        ArrayList<Integer> categoryIds = new ArrayList<>();
+        if (categoryId != null) {
+            Category category = categoryMapper.selectByPrimaryKey(categoryId);
+            if (category == null && StringUtils.isBlank(keyword)) {
+                return ServerResponse.createByErrorMessage("categoryId无效");
+            }
+
+            if (StringUtils.isNotBlank(keyword)) {
+                keyword = "%" + keyword + "%";
+            }
+            List<Integer> categories = iCategoryService.recurseCategory(categoryId).getData();
+            PageHelper.startPage(pageNum, pageSize);
+
+            categoryIds.addAll(categories);
+
+            if (StringUtils.isNotBlank(orderBy)) {
+                PageHelper.orderBy(orderBy);
+            }
+            List<Product> products = productMapper.selectByNameAndCategoryIds(StringUtils.isBlank(keyword) ? null : keyword,
+                    categoryIds.size() > 0 ? categoryIds : null);
+
+            List<ProductListVo> productListVos = new ArrayList<>();
+            for (Product product : products) {
+                productListVos.add(assembleProductListVo(product));
+            }
+            PageInfo pageInfo = new PageInfo(products);
+            pageInfo.setList(productListVos);
+            return ServerResponse.createBySuccess(pageInfo);
+        }
+        return null;
     }
 
     private ProductListVo assembleProductListVo(Product product) {
@@ -171,15 +217,5 @@ public class ProductServiceImpl implements IProductService {
         productDetailVo.setUpdateTime(DateTimeUtil.dateToStr(product.getUpdateTime()));
 
         return productDetailVo;
-    }
-
-    public ServerResponse<ProductDetailVo> productDetail(Integer productId) {
-        Product product = productMapper.selectByPrimaryKey(productId);
-        if (product == null) {
-            return ServerResponse.createBySuccessMessage("商品id不存在");
-        }
-
-        ProductDetailVo productDetailVo = assembleProductDetailVo(product);
-        return ServerResponse.createBySuccess(productDetailVo);
     }
 }

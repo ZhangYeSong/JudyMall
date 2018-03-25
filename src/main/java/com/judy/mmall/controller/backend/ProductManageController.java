@@ -52,7 +52,7 @@ public class ProductManageController {
 
     @RequestMapping("manage_product_detail.do")
     @ResponseBody
-    public ServerResponse<ProductDetailVo> manageProductDetail(HttpSession session, Integer productId, Integer productState) {
+    public ServerResponse<ProductDetailVo> manageProductDetail(HttpSession session, Integer productId) {
         if (!ServerResponse.isManager(session)) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "没有以管理员身份登录");
         }
@@ -60,14 +60,14 @@ public class ProductManageController {
         return iProductService.manageProductDetail(productId);
     }
 
-    @RequestMapping("get_product_list.do")
+    @RequestMapping("get_all_product_list.do")
     @ResponseBody
-    public ServerResponse<PageInfo> getProductList(HttpSession session, @RequestParam(value = "pageNum", defaultValue = "1") int pageNum, @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+    public ServerResponse<PageInfo> getAllProductList(HttpSession session, @RequestParam(value = "pageNum", defaultValue = "1") int pageNum, @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
         if (!ServerResponse.isManager(session)) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "没有以管理员身份登录");
         }
 
-        return iProductService.getProductList(pageNum, pageSize);
+        return iProductService.getAllProductList(pageNum, pageSize);
     }
 
     @RequestMapping("search_product_list.do")

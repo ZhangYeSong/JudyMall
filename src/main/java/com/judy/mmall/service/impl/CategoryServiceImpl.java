@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -72,11 +70,13 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     @Override
-    public ServerResponse recurseCategory(Integer categoryId) {
-        HashSet<Category> categories = Sets.newHashSet();
-        ArrayList<Category> categoryArrayList = Lists.newArrayList();
-        findAllChildCategories(categories, categoryId);
-        categoryArrayList.addAll(categories);
+    public ServerResponse<List<Integer>> recurseCategory(Integer categoryId) {
+        Set<Category> categories = Sets.newHashSet();
+        List<Integer> categoryArrayList = Lists.newArrayList();
+        categories.addAll(findAllChildCategories(categories, categoryId));
+        for (Category category : categories) {
+            categoryArrayList.add(category.getId());
+        }
         return ServerResponse.createBySuccess(categoryArrayList);
     }
 

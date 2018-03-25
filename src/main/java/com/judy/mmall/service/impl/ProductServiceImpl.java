@@ -80,7 +80,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public ServerResponse<ProductDetailVo> getProductDetail(Integer productId) {
+    public ServerResponse<ProductDetailVo> manageProductDetail(Integer productId) {
         Product product = productMapper.selectByPrimaryKey(productId);
         if (product == null) {
             return ServerResponse.createBySuccessMessage("商品id不存在");
@@ -120,6 +120,20 @@ public class ProductServiceImpl implements IProductService {
 
     }
 
+    @Override
+    public ServerResponse<ProductDetailVo> getProductDetail(Integer productId) {
+        Product product = productMapper.selectByPrimaryKey(productId);
+        if (product == null) {
+            return ServerResponse.createBySuccessMessage("商品id不存在");
+        }
+
+        ProductDetailVo productDetailVo = assembleProductDetailVo(product);
+        if (productDetailVo.getStatus() == 0) {
+            return ServerResponse.createByErrorMessage("商品已下架");
+        }
+        return ServerResponse.createBySuccess(productDetailVo);
+    }
+
     private ProductListVo assembleProductListVo(Product product) {
         ProductListVo productListVo = new ProductListVo();
         productListVo.setId(product.getId());
@@ -157,5 +171,15 @@ public class ProductServiceImpl implements IProductService {
         productDetailVo.setUpdateTime(DateTimeUtil.dateToStr(product.getUpdateTime()));
 
         return productDetailVo;
+    }
+
+    public ServerResponse<ProductDetailVo> productDetail(Integer productId) {
+        Product product = productMapper.selectByPrimaryKey(productId);
+        if (product == null) {
+            return ServerResponse.createBySuccessMessage("商品id不存在");
+        }
+
+        ProductDetailVo productDetailVo = assembleProductDetailVo(product);
+        return ServerResponse.createBySuccess(productDetailVo);
     }
 }

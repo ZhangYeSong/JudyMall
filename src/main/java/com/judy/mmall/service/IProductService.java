@@ -10,9 +10,11 @@ public interface IProductService {
 
     ServerResponse setProductState(Integer productId, Integer productState);
 
-    ServerResponse<ProductDetailVo> getProductDetail(Integer productId);
+    ServerResponse<ProductDetailVo> manageProductDetail(Integer productId);
 
     ServerResponse<PageInfo> getProductList(int pageNum, int pageSize);
 
     ServerResponse<PageInfo> searchProductList(String productName, Integer productId, int pageNum, int pageSize);
+
+    ServerResponse<ProductDetailVo> getProductDetail(Integer productId);
 }
